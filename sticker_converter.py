@@ -5,6 +5,8 @@ from pathlib import Path
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QApplication,
+    QComboBox,
+    QDoubleSpinBox,
     QFileDialog,
     QFormLayout,
     QGroupBox,
@@ -13,7 +15,6 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMainWindow,
     QPushButton,
-    QSpinBox,
     QVBoxLayout,
     QWidget,
 )
@@ -68,15 +69,17 @@ class MainWindow(QMainWindow):
         settings_group = QGroupBox("Settings")
         settings_layout = QFormLayout(settings_group)
 
-        self.fps_spin = QSpinBox()
-        self.fps_spin.setRange(1, 120)
-        self.fps_spin.setValue(30)
+        self.fps_combo = QComboBox()
+        self.fps_combo.addItems(["5", "10", "15", "20", "25", "30"])
+        self.fps_combo.setCurrentText("30")
 
-        self.time_spin = QSpinBox()
-        self.time_spin.setRange(1, 60)
-        self.time_spin.setValue(3)
+        self.time_spin = QDoubleSpinBox()
+        self.time_spin.setRange(0.1, 3.0)
+        self.time_spin.setDecimals(2)
+        self.time_spin.setSingleStep(0.1)
+        self.time_spin.setValue(3.0)
 
-        settings_layout.addRow("Frame Rate (FPS)", self.fps_spin)
+        settings_layout.addRow("Frame Rate (FPS)", self.fps_combo)
         settings_layout.addRow("Duration (seconds)", self.time_spin)
 
         layout.addWidget(settings_group)
@@ -97,7 +100,7 @@ class MainWindow(QMainWindow):
 
         layout.addStretch()
 
-        # Dark theme with purple buttons
+        # Dark theme with light blue buttons
         self.setStyleSheet("""
             QMainWindow {
                 background: #1e1f22;
@@ -118,7 +121,8 @@ class MainWindow(QMainWindow):
             }
 
             QLineEdit,
-            QSpinBox {
+            QComboBox,
+            QDoubleSpinBox {
                 background: #3a3d41;
                 color: white;
                 border: 1px solid #5a5a5a;
@@ -126,8 +130,13 @@ class MainWindow(QMainWindow):
                 padding: 6px;
             }
 
+            QComboBox QAbstractItemView {
+                background: #3a3d41;
+                color: white;
+            }
+
             QPushButton {
-                background: #7c3aed;
+                background: #60a5fa;
                 color: white;
                 border: none;
                 border-radius: 6px;
@@ -136,11 +145,11 @@ class MainWindow(QMainWindow):
             }
 
             QPushButton:hover {
-                background: #8b5cf6;
+                background: #93c5fd;
             }
 
             QPushButton:pressed {
-                background: #6d28d9;
+                background: #3b82f6;
             }
         """)
 
@@ -204,7 +213,7 @@ class MainWindow(QMainWindow):
             str(ffmpeg),
             "-y",
             "-i", str(self.input_file),
-            "-r", str(self.fps_spin.value()),
+            "-r", self.fps_combo.currentText(),
             "-t", str(self.time_spin.value()),
             "-an",
             "-c:v", "libvpx-vp9",
